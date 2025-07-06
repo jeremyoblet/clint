@@ -2,16 +2,22 @@ from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
 from base_command import BaseCommand
-from context import GLOBAL_CONTEXT
 
 console = Console()
 
 class ReadFileCommand(BaseCommand):
     name = "read"
-    help = "Lit et affiche le contenu d’un fichier texte.\nOptions : --head N, --tail N, --numbers"
+    help = (
+        "Lit et affiche le contenu d’un fichier texte.\n"
+        "Options :\n"
+        "  --head N    Affiche les N premières lignes\n"
+        "  --tail N    Affiche les N dernières lignes\n"
+        "  --numbers   Numérote les lignes"
+    )
 
-    def run(self, args: str):
-        self.check_help(args)
+    def run(self, args: str, context):
+        if self.check_help(args):
+            return
 
         import re
         parts = args.strip().split()
@@ -41,7 +47,7 @@ class ReadFileCommand(BaseCommand):
             console.print(Panel("[bold red]Fichier introuvable dans la commande[/bold red]", title="⛔ Erreur", border_style="red"))
             return
 
-        path = (GLOBAL_CONTEXT.cwd / filename).expanduser().resolve()
+        path = (context.cwd / filename).expanduser().resolve()
 
         if not path.exists():
             console.print(Panel(f"[red]Le fichier n'existe pas : {path}[/red]", title="❌ Erreur", border_style="red"))

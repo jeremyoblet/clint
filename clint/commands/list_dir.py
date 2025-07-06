@@ -6,7 +6,6 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 from base_command import BaseCommand
-from context import GLOBAL_CONTEXT
 
 console = Console()
 
@@ -14,9 +13,10 @@ class ListDirCommand(BaseCommand):
     name = "list"
     help = "Liste les fichiers et dossiers avec détails (responsive)."
 
-    def run(self, args: str):
+    def run(self, args: str, context):
         self.check_help(args)
-        target = (GLOBAL_CONTEXT.cwd / args.strip()).resolve() if args.strip() else GLOBAL_CONTEXT.cwd.resolve()
+
+        target = (context.cwd / args.strip()).resolve() if args.strip() else context.cwd.resolve()
 
         if not target.exists():
             console.print(Panel(f"[red]Le chemin n'existe pas : {target}[/red]", title="❌ Erreur"))
@@ -40,7 +40,6 @@ class ListDirCommand(BaseCommand):
             "gap": 3  # espaces entre colonnes
         }
 
-        # Calcul de la largeur disponible pour le nom
         available = term_width - padding - sum(col_widths.values()) - col_widths["gap"] * 3
         name_col_width = max(15, available)
 
@@ -71,7 +70,7 @@ class ListDirCommand(BaseCommand):
             table,
             title=f"📂 {target}",
             border_style="blue",
-            expand=True  # ✅ occupe toute la largeur du terminal
+            expand=True
         ))
 
     def _get_size(self, path: Path) -> str:

@@ -3,7 +3,7 @@ import shutil
 from rich.console import Console
 from rich.panel import Panel
 from base_command import BaseCommand
-from context import GLOBAL_CONTEXT
+from context import ShellContext
 
 console = Console()
 
@@ -11,15 +11,15 @@ class CopyFileCommand(BaseCommand):
     name = "copy"
     help = "Copie un fichier d’un chemin source vers une destination."
 
-    def run(self, args: str):
+    def run(self, args: str, context: ShellContext):
         parts = args.strip().split()
         if len(parts) != 2:
             console.print(Panel("[bold red]Usage : copy <source> <destination>[/bold red]", title="⛔ Erreur"))
             return
 
         src_str, dst_str = parts
-        src_path = (GLOBAL_CONTEXT.cwd / src_str).expanduser().resolve()
-        dst_path = (GLOBAL_CONTEXT.cwd / dst_str).expanduser().resolve()
+        src_path = (context.cwd / src_str).expanduser().resolve()
+        dst_path = (context.cwd / dst_str).expanduser().resolve()
 
         if not src_path.exists():
             console.print(Panel(f"[red]Le fichier source n'existe pas : {src_path}[/red]", title="❌ Erreur"))

@@ -3,7 +3,6 @@ from rich.console import Console
 from rich.tree import Tree as RichTree
 from rich.panel import Panel
 from base_command import BaseCommand
-from context import GLOBAL_CONTEXT
 
 console = Console()
 
@@ -11,12 +10,12 @@ class TreeCommand(BaseCommand):
     name = "tree"
     help = "Affiche l’arborescence du dossier courant ou d’un chemin donné."
 
-    def run(self, args: str):
+    def run(self, args: str, context):
         if self.check_help(args):
             return
 
         path_str = args.strip()
-        root = (GLOBAL_CONTEXT.cwd / path_str).resolve() if path_str else GLOBAL_CONTEXT.cwd.resolve()
+        root = (context.cwd / path_str).resolve() if path_str else context.cwd.resolve()
 
         if not root.exists():
             console.print(Panel(f"[red]Le chemin n'existe pas : {root}[/red]", title="❌ Erreur", border_style="red"))

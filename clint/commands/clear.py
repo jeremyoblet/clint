@@ -1,16 +1,12 @@
-import os
-import platform
+from rich.console import Console
 from base_command import BaseCommand
+import os
+
+console = Console()
 
 class ClearCommand(BaseCommand):
     name = "clear"
-    help = "Efface l’écran du terminal."
+    help = "Nettoie l’écran du terminal."
 
-    def run(self, args: str):
-        system = platform.system()
-        if system == "Windows":
-            os.system("cls")
-        else:
-            os.system("clear")
-
-# À ajouter dans command_list.py
+    def run(self, args: str, context):  # Ajout de 'context'
+        os.system('cls' if os.name == 'nt' else 'clear')

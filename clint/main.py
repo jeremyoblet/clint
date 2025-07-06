@@ -13,25 +13,28 @@ from command_list import COMMAND_CLASSES
 from command_router import Router
 from style import custom_style
 from clint_ascii import CLINT_ASCII
+from context import ShellContext
 
 HISTORY_PATH = os.path.expanduser("~/.mysh_history")
 console = Console()
-
+context = ShellContext()
 
 def print_separator():
     width = get_terminal_size((100, 20)).columns
-    console.print("/" * width, style="dim")
+    console.print(" " * width, style="dim")
 
 
 def main():
-    router = Router(COMMAND_CLASSES)
-    console.print(CLINT_ASCII, style="bold green")
+    router = Router(COMMAND_CLASSES, context)
+    # console.print(CLINT_ASCII, style="bold green")
 
     while True:
         try:
+            cwd_name = context.cwd.name or context.cwd.drive
+
             user_input = prompt(
-                HTML("<ansigreen>clint</ansigreen><ansiblue> ❯❯❯ </ansiblue>"),
-                completer=build_completer(),
+            HTML(f"<ansigreen>{cwd_name}</ansigreen><ansiblue> ❯❯❯ </ansiblue>"),
+                completer=build_completer(context),
                 complete_style=CompleteStyle.READLINE_LIKE,
                 history=FileHistory(HISTORY_PATH),
                 style=custom_style

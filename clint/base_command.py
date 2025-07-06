@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from context import ShellContext
+
 class BaseCommand(ABC):
     name: str = ""
     help: str = ""
@@ -17,13 +19,12 @@ class BaseCommand(ABC):
         ))
 
     def check_help(self, args: str) -> bool:
-        """Affiche l’aide si --help est présent dans les arguments."""
         if "--help" in args.split():
             self.show_help()
             return True
         return False
     
     @abstractmethod
-    def run(self, args: str):
+    def run(self, args: str, context: ShellContext):
         raise NotImplementedError
 
