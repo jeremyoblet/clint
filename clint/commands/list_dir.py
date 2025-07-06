@@ -1,69 +1,40 @@
 from pathlib import Path
-from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-import os
-import stat
+from base_command import BaseCommand
 
 console = Console()
 
-def human_readable_size(size_bytes):
-    # Conversion en Ko/Mo/Go
-    for unit in ['o', 'Ko', 'Mo', 'Go', 'To']:
-        if size_bytes < 1024:
-            return f"{size_bytes:.0f} {unit}"
-        size_bytes /= 1024
-    return f"{size_bytes:.0f} To"
+class ListDirCommand(BaseCommand):
+    name = "list"
+    help = "Liste les fichiers et dossiers d’un répertoire."
 
-def get_permissions(path: Path) -> str:
-    mode = path.stat().st_mode
-    perms = ""
-    perms += "r" if os.access(path, os.R_OK) else "-"
-    perms += "w" if os.access(path, os.W_OK) else "-"
-    perms += "x" if os.access(path, os.X_OK) else "-"
-    return perms
+    def run(self, args: str):
+        target = Path(args.strip()) if args.strip() else Path.cwd()
 
-def run(args: str):
-    target = args.strip() or "."
-    path = Path(target)
+        if not target.exists():
+            console.print(Panel(f"[red]Le chemin n'existe pas : {target}[/red]", title="❌ Erreur"))
+            return
 
-    if not path.exists():
-        console.print(
-            Panel(f"[bold red]Le dossier n'existe pas :[/bold red] {path}",
-                  title="⛔ Erreur", border_style="red")
-        )
-        return
+        if not target.is_dir():
+            console.print(Panel(f"[red]Ce n’est pas un dossier : {target}[/red]", title="❌ Erreur"))
+            return
 
-    if not path.is_dir():
-        console.print(
-            Panel(f"[bold yellow]Ce n'est pas un dossier :[/bold yellow] {path}",
-                  title="⚠ Attention", border_style="yellow")
-        )
-        return
+        items = sorted(target.iterdir(), key=lambda p: (not p.is_dir(), p.name.lower()))
 
-    entries = list(path.iterdir())
-    if not entries:
-        console.print(
-            Panel(f"[italic]Le dossier est vide :[/italic] {path.resolve()}",
-                  title="📂 Vide", border_style="blue")
-        )
-        return
+        if not items:
+            console.print(Panel(f"[yellow]Le dossier est vide : {target.resolve()}[/yellow]", title="📂 Vide"))
+            return
 
-    table = Table(title=f"📁 Contenu de : {path.resolve()}", border_style="green")
-    table.add_column("Nom", style="cyan", no_wrap=True)
-    table.add_column("Type", style="magenta")
-    table.add_column("Taille", justify="right", style="yellow")
-    table.add_column("Modifié le", style="white")
-    table.add_column("Droits", style="bright_black", justify="center")
+        table = Table(title=f"📁 Contenu de {target.resolve()}", show_lines=False)
+        table.add_column("Nom", style="bold")
+        table.add_column("Type", style="dim")
 
-    for entry in sorted(entries):
-        stat_info = entry.stat()
-        entry_type = "📄 Fichier" if entry.is_file() else "📁 Dossier"
-        size = human_readable_size(stat_info.st_size) if entry.is_file() else "-"
-        modified = datetime.fromtimestamp(stat_info.st_mtime).strftime("%Y-%m-%d %H:%M:%S")
-        perms = get_permissions(entry)
+        for item in items:
+            item_type = "Dossier" if item.is_dir() else "Fichier"
+            table.add_row(item.name, item_type)
 
-        table.add_row(entry.name, entry_type, size, modified, perms)
+        console.print(table)
 
-    console.print(table)
+# N’oublie pas d’ajouter ListDirCommand dans command_list.py

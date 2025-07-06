@@ -1,18 +1,20 @@
 from prompt_toolkit.completion import NestedCompleter, PathCompleter
 
-file_completer = PathCompleter(only_directories=False)
-dir_completer = PathCompleter(only_directories=True)
+from context import GLOBAL_CONTEXT
 
-completer = NestedCompleter.from_nested_dict(
-    {
-    "make": 
-        {
-            "-file": file_completer,
-            "-dir": dir_completer,
+
+def build_completer():
+    return NestedCompleter.from_nested_dict({
+        "make": {
+            "-file": PathCompleter(only_directories=False, get_paths=lambda: [str(GLOBAL_CONTEXT.cwd)]),
+            "-dir": PathCompleter(only_directories=True, get_paths=lambda: [str(GLOBAL_CONTEXT.cwd)]),
         },
-    "list": dir_completer,
-    "clear": None,
-    "help": None,
-    "exit": None,
-    "quit": None,
-})
+        "read": PathCompleter(only_directories=False, get_paths=lambda: [str(GLOBAL_CONTEXT.cwd)]),
+        "copy": None,  # tu peux l’améliorer plus tard
+        "go": PathCompleter(only_directories=True, get_paths=lambda: [str(GLOBAL_CONTEXT.cwd)]),
+        "here": None,
+        "tree": PathCompleter(only_directories=False, get_paths=lambda: [str(GLOBAL_CONTEXT.cwd)]),
+        "help": None,
+        "exit": None,
+        "quit": None,
+    })

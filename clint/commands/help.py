@@ -1,19 +1,23 @@
 from rich.console import Console
+from rich.panel import Panel
 from rich.table import Table
+from base_command import BaseCommand
+import command_list as command_list
 
 console = Console()
 
-def run(args: str = ""):
-    table = Table(title="📚 Aide - Commandes disponibles", border_style="cyan")
+class HelpCommand(BaseCommand):
+    name = "help"
+    help = "Affiche la liste des commandes disponibles."
 
-    table.add_column("Commande", style="magenta", no_wrap=True)
-    table.add_column("Description", style="white")
+    def run(self, args: str):
+        table = Table(title="🆘 Aide - Commandes disponibles", show_lines=False)
+        table.add_column("Commande", style="bold green")
+        table.add_column("Description", style="dim")
 
-    table.add_row("make -file <nom>", "Crée un fichier vide avec le nom donné")
-    table.add_row("make -dir <nom>", "Crée un dossier (avec parents si besoin)")
-    table.add_row("list [chemin]", "Liste le contenu d'un dossier sous forme de tableau")
-    table.add_row("clear", "Efface l’écran du terminal")
-    table.add_row("help", "Affiche cette aide")
-    table.add_row("exit / quit", "Ferme le terminal")
+        for CommandClass in command_list.COMMAND_CLASSES:
+            table.add_row(CommandClass.name, CommandClass.help)
 
-    console.print(table)
+        console.print(table)
+
+# À ajouter dans command_list.py
