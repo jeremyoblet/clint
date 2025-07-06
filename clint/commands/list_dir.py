@@ -36,5 +36,3 @@ class ListDirCommand(BaseCommand):
             table.add_row(item.name, item_type)
 
         console.print(table)
-
-# N’oublie pas d’ajouter ListDirCommand dans command_list.py

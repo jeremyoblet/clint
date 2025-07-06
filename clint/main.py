@@ -3,6 +3,7 @@ import os
 from prompt_toolkit import prompt
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.shortcuts.prompt import CompleteStyle
 
 from completer import build_completer
 from command_list import COMMAND_CLASSES
@@ -20,6 +21,7 @@ def main():
             user_input = prompt(
                 HTML("<ansigreen>mysh</ansigreen><ansiblue> ❯ </ansiblue>"),
                 completer=build_completer(),
+                complete_style=CompleteStyle.READLINE_LIKE,
                 history=FileHistory(HISTORY_PATH),
                 style=custom_style
             ).strip()
