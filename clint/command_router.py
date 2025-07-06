@@ -1,18 +1,22 @@
-from prompt_toolkit.completion import NestedCompleter, PathCompleter
-from commands import make_file, make_dir, list_dir, clear, help as help_cmd
+from typing import List
 
-# On crée un PathCompleter pour compléter uniquement les fichiers ou dossiers
-file_completer = PathCompleter(only_directories=False)
-dir_completer = PathCompleter(only_directories=True)
+class Router:
+    def __init__(self, command_classes):
+        # dictionnaire nom ➜ classe (pas instance)
+        self.command_classes = {cls.name: cls for cls in command_classes}
 
-completer = NestedCompleter.from_nested_dict({
-    "make": {
-        "-file": file_completer,
-        "-dir": dir_completer,
-    },
-    "list": None,
-    "clear": None,
-    "help": None,
-    "exit": None,
-    "quit": None,
-})
+    def find_match(self, input_str: str):
+        input_str = input_str.strip()
+        for name, cls in self.command_classes.items():
+            if input_str.startswith(name):
+                args = input_str[len(name):].strip()
+                return cls, args
+        return None, input_str
+
+    def execute(self, input_str: str):
+        CommandClass, args = self.find_match(input_str)
+        if CommandClass:
+            instance = CommandClass()
+            return instance.run(args)
+        else:
+            print(f"[Erreur] Commande inconnue : {input_str}")

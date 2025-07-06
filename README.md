@@ -35,3 +35,21 @@ Autocompletion	tab	tab	tab + Intellisense
 copy [file or dir]
 cut [file or dir]
 paste [file or dir]
+
+
+
+mysh/
+├── main.py
+├── completer.py
+├── command_router.py
+├── parser/                     # (plus tard) analyse syntaxique
+│   ├── lexer.py
+│   ├── parser.py
+│   └── interpreter.py
+├── context.py                  # variables, fonctions, env global
+├── runtime/                    # moteur d’exécution
+│   ├── evaluator.py
+│   └── scope.py
+└── commands/
+    ├── make_file.py
+    └── ...

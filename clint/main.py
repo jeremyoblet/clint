@@ -5,11 +5,16 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
 
 from completer import completer
-from command_router import run_command
+
+from commands.command_list import COMMAND_CLASSES
+from command_router import Router
+
 
 HISTORY_PATH = os.path.expanduser("~/.mysh_history")
 
 def main():
+    router = Router(COMMAND_CLASSES)
+
     while True:
         try:
             user_input = prompt(
@@ -21,14 +26,11 @@ def main():
             if user_input in {"exit", "quit"}:
                 break
 
-            func, args = run_command(user_input)
-            if func:
-                func(args)
-            else:
-                print(f"[Erreur] Commande inconnue : {user_input}")
+            router.execute(user_input)
+
 
         except KeyboardInterrupt:
-            print("\n[Terminal fermé]")
+            print("\n[Terminal closed]")
             break
 
 if __name__ == "__main__":
