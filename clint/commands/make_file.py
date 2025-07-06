@@ -10,6 +10,7 @@ class MakeFileCommand(BaseCommand):
     help = "Crée un fichier vide."
 
     def run(self, args: str):
+        self.check_help(args)
         name = args.strip()
         if not name:
             console.print(Panel("[bold red]Nom manquant[/bold red]", title="⛔ Erreur"))

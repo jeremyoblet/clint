@@ -10,5 +10,7 @@ class HereCommand(BaseCommand):
     help = "Affiche le répertoire courant (équivalent de 'pwd')."
 
     def run(self, args: str):
+        self.check_help(args)
+
         current_path = GLOBAL_CONTEXT.cwd.resolve()
         console.print(Panel(str(current_path), title="📍 Répertoire actuel", border_style="blue"))

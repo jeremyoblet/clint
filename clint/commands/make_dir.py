@@ -10,6 +10,7 @@ class MakeDirCommand(BaseCommand):
     help = "Crée un dossier."
 
     def run(self, args: str):
+        self.check_help(args)
         name = args.strip()
         if not name:
             console.print(Panel("[bold red]Nom du dossier manquant[/bold red]", title="⛔ Erreur"))
