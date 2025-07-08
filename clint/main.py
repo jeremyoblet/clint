@@ -1,7 +1,7 @@
 import os
 from shutil import get_terminal_size
 
-from prompt_toolkit import prompt
+from prompt_toolkit import PromptSession
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.history import FileHistory
 from prompt_toolkit.shortcuts.prompt import CompleteStyle
@@ -28,17 +28,24 @@ def main():
     router = Router(COMMAND_CLASSES, context)
     # console.print(CLINT_ASCII, style="bold green")
 
+    session = PromptSession(
+        completer=build_completer(context),
+        complete_style=CompleteStyle.READLINE_LIKE,
+        history=FileHistory(HISTORY_PATH),
+        style=custom_style
+    )
+    
     while True:
         try:
             cwd_name = context.cwd.name or context.cwd.drive
 
-            user_input = prompt(
-            HTML(f"<ansigreen>{cwd_name}</ansigreen><ansiblue> ❯❯❯ </ansiblue>"),
-                completer=build_completer(context),
-                complete_style=CompleteStyle.READLINE_LIKE,
-                history=FileHistory(HISTORY_PATH),
-                style=custom_style
+
+
+            # ensuite, dans ta boucle :
+            user_input = session.prompt(
+                HTML(f"<ansigreen>{cwd_name}</ansigreen><ansiblue> ❯❯❯ </ansiblue>")
             ).strip()
+
 
             if user_input in {"exit", "quit"}:
                 break

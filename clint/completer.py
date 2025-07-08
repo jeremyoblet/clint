@@ -1,11 +1,13 @@
 from prompt_toolkit.completion import NestedCompleter
+from find_completer import FindCompleter
 from smart_path_completer import SmartPathCompleter
 
 def build_completer(context):
     def p(**kwargs):
-        return SmartPathCompleter(get_paths=lambda: [str(context.cwd)], **kwargs)
+        return SmartPathCompleter(only_directories=kwargs.get("only_directories", False))
 
     return NestedCompleter.from_nested_dict({
+        "find": FindCompleter(),
         "make": {
             "-file": p(only_directories=False),
             "-dir": p(only_directories=True),
@@ -18,7 +20,7 @@ def build_completer(context):
         "move": p(only_directories=False),
         "rename": p(only_directories=False),
         "launch": p(only_directories=False),
+        "remove": p(only_directories=False),
         "help": None,
         "exit": None,
-        "quit": None,
     })
