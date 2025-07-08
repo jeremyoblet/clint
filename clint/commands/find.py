@@ -1,6 +1,7 @@
 from pathlib import Path
 from rich.console import Console
 from rich.panel import Panel
+from rich.text import Text
 from base_command import BaseCommand
 
 console = Console()
@@ -9,8 +10,8 @@ class FindCommand(BaseCommand):
     name = "find"
     help = (
         "Recherche récursive de fichiers avec filtre de profondeur et contenu.\n"
-        "Usage : find \"pattern\" [--from dossier] [--depth N] [--contains \"texte\"]\n"
-        "Exemple : find \"*.py\" --from src --depth 2 --contains \"import\""
+        "Usage : find \"pattern\" [--from dossier] [--depth N] [--contains \"texte\"] [--content]\n"
+        "Exemple : find \"*.py\" --from src --depth 2 --contains \"def\" --content"
     )
 
     def run(self, args: str, context):
@@ -32,6 +33,7 @@ class FindCommand(BaseCommand):
         search_root = context.cwd
         max_depth = None
         contains = None
+        show_content = False
 
         i = 1
         while i < len(parts):
@@ -63,6 +65,8 @@ class FindCommand(BaseCommand):
                 i += 1
                 if i < len(parts):
                     contains = parts[i]
+            elif parts[i] == "--content":
+                show_content = True
             i += 1
 
         def search_with_depth(root: Path, pattern: str, current_depth: int = 0):
@@ -74,15 +78,17 @@ class FindCommand(BaseCommand):
                 if item.is_file() and fnmatch.fnmatch(item.name, pattern):
                     if contains:
                         try:
-                            if contains in item.read_text(encoding="utf-8"):
+                            text = item.read_text(encoding="utf-8")
+                            if contains in text:
                                 matches.append(item)
                         except Exception:
-                            continue  # skip unreadable file
+                            continue  # Ignore fichiers illisibles (binaire, etc.)
                     else:
                         matches.append(item)
                 elif item.is_dir():
                     matches.extend(search_with_depth(item, pattern, current_depth + 1))
             return matches
+
 
         matches = search_with_depth(search_root, pattern)
         matches = sorted(p.relative_to(context.cwd) for p in matches)
@@ -96,10 +102,63 @@ class FindCommand(BaseCommand):
             ))
             return
 
-        output = "\n".join(str(p) for p in matches)
-        console.print(Panel(
-            output,
-            title=f"📂 {len(matches)} fichier(s) trouvés",
-            border_style="green",
-            expand=True
-        ))
+        if contains and show_content:
+            from rich.markup import escape
+            from rich.text import Text
+
+            all_text = Text()
+            found_any = False
+
+            for match in matches:
+                abs_path = context.cwd / match
+                try:
+                    lines = abs_path.read_text(encoding="utf-8").splitlines()
+                except Exception:
+                    continue
+
+                lines_found = []
+
+                for i, line in enumerate(lines):
+                    if contains in line:
+                        found_any = True
+                        lineno = str(i + 1).rjust(4)
+                        # Construction ligne avec mise en forme
+                        line_text = Text()
+                        line_text.append(f"{lineno} ", style="dim")
+
+                        start = 0
+                        while True:
+                            idx = line.find(contains, start)
+                            if idx == -1:
+                                line_text.append(line[start:])
+                                break
+                            line_text.append(line[start:idx])
+                            line_text.append(contains, style="orange1")
+                            start = idx + len(contains)
+
+                        lines_found.append(line_text)
+
+                if lines_found:
+                    all_text.append(Text(f"\n{match}\n", style="bold blue"))
+                    for line_text in lines_found:
+                        all_text.append(line_text)
+                        all_text.append("\n")
+
+            if not found_any:
+                all_text.append("[dim](Aucune ligne correspondante)[/dim]")
+
+            console.print(Panel(
+                all_text,
+                title=f"📂 Résultats avec contenu : {len(matches)} fichier(s)",
+                border_style="green",
+                expand=True
+            ))
+
+        elif contains:
+            output = "\n".join(str(p) for p in matches)
+            console.print(Panel(
+                output or "[dim](Aucun fichier correspondant au filtre --contains)[/dim]",
+                title=f"📂 {len(matches)} fichier(s) trouvés contenant \"{contains}\"",
+                border_style="green",
+                expand=True
+            ))
